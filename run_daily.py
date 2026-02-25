@@ -92,9 +92,9 @@ def run(target_date: date | None = None):
         )
         daily_page_id = daily_page["id"]
         if is_new:
-            results["Daily"] = {"status": "생성", "detail": f"새 페이지 생성 ({daily_page_id})"}
+            results["Daily"] = {"status": "생성", "detail": title}
         else:
-            results["Daily"] = {"status": "기존", "detail": f"이미 존재하는 페이지 ({daily_page_id})"}
+            results["Daily"] = {"status": "기존", "detail": title}
         log.info(f"  Daily 완료: {daily_page_id}")
     except APIResponseError as e:
         msg = f"Notion API 오류: {e.code} - {e.message}"
@@ -139,13 +139,14 @@ def run(target_date: date | None = None):
     log.info("[3/4] Weekly 페이지")
     if daily_page_id:
         try:
-            from add_weekly import ensure_weekly
+            from add_weekly import ensure_weekly, get_week_info
             weekly_page, is_new = ensure_weekly(notion, date_str, daily_page_id)
             weekly_page_id = weekly_page["id"]
+            weekly_title = get_week_info(today)["title"]
             if is_new:
-                results["Weekly"] = {"status": "생성", "detail": f"새 페이지 생성 ({weekly_page_id})"}
+                results["Weekly"] = {"status": "생성", "detail": weekly_title}
             else:
-                results["Weekly"] = {"status": "기존", "detail": f"이미 존재하는 페이지 ({weekly_page_id})"}
+                results["Weekly"] = {"status": "기존", "detail": weekly_title}
             log.info(f"  Weekly 완료: {weekly_page_id}")
         except APIResponseError as e:
             msg = f"Notion API 오류: {e.code} - {e.message}"
@@ -163,12 +164,13 @@ def run(target_date: date | None = None):
     log.info("[4/4] Monthly 페이지")
     if weekly_page_id:
         try:
-            from add_monthly import ensure_monthly
+            from add_monthly import ensure_monthly, get_month_info
             monthly_page, is_new = ensure_monthly(notion, date_str, weekly_page_id)
+            monthly_title = get_month_info(today)["title"]
             if is_new:
-                results["Monthly"] = {"status": "생성", "detail": f"새 페이지 생성 ({monthly_page['id']})"}
+                results["Monthly"] = {"status": "생성", "detail": monthly_title}
             else:
-                results["Monthly"] = {"status": "기존", "detail": f"이미 존재하는 페이지 ({monthly_page['id']})"}
+                results["Monthly"] = {"status": "기존", "detail": monthly_title}
             log.info("  Monthly 완료")
         except APIResponseError as e:
             msg = f"Notion API 오류: {e.code} - {e.message}"
