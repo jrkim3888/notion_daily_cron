@@ -9,8 +9,11 @@
 import sys
 import logging
 import traceback
-from datetime import date
+from datetime import date, datetime, timezone, timedelta
 from pathlib import Path
+
+# KST (UTC+9)
+KST = timezone(timedelta(hours=9))
 from notion_client import APIResponseError
 from notion_config import get_client, TEMPLATE_PAGE_ID
 LOG_DIR = Path(__file__).parent / "logs"
@@ -66,7 +69,7 @@ def make_journal_params(d: date) -> dict:
 def run(target_date: date | None = None):
     setup_logging()
 
-    today = target_date or date.today()
+    today = target_date or datetime.now(KST).date()
     title = make_daily_title(today)
     date_str = today.isoformat()
     year = f"{today.year}년"
